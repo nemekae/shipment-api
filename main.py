@@ -1,9 +1,14 @@
-from fastapi import FastAPI, status, HTTPException
+# pyright: reportMissingImports=false
+
+
 from typing import Any
+
+from fastapi import FastAPI, HTTPException, status
 from scalar_fastapi import get_scalar_api_reference
 
-app = FastAPI()
+from schemas import Shipment, ShipmentCreate, ShipmentStatus, ShipmentUpdate
 
+app = FastAPI()
 
 # Let add a mini db of 7 different data elements
 
@@ -11,56 +16,56 @@ shipments = {
     12700: {
         "content": "TV board",
         "weight": 12.5,
-        "color": "brown",
+        "destination": 1001,
         "status": "available",
     },
     12701: {
             "content": "staircase",
             "weight": 12.7,
-            "color": "brown",
+            "destination": 1002,
             "status": "delivered",
         },
     12702: {
             "content": "wooden table",
             "weight": 12.4,
-            "color": "brown",
+            "destination": 1003,
             "status": "In-transit",
         },
     12703: {
             "content": "wooden chair",
             "weight": 12,
-            "color": "brown",
+            "destination": 1004,
             "status": "delivered",
         },
     12704: {
             "content": "bedframe",
             "weight": 12.5,
-            "color": "brown",
+            "destination": 1005,
             "status": "In-transit",
         },
     12705: {
             "content": "wooden locker",
             "weight": 12.5,
-            "color": "brown",
+            "destination": 1006,
             "status": "placed",
         },
     12706: {
             "content": "cupboard",
             "weight": 12.5,
-            "color": "black",
+            "destination": 1007,
             "status": "available",
         },
     12707: {
             "content": "gold tiles",
             "weight": 10,
-            "color": "ash",
+            "destination": 1008,
             "status": "In-transit",
         },
 }
 
 # Define query parameter
-@app.get("/shipment")
-def shipment(id: int | None = None) -> dict[str, Any]:
+@app.get("/shipment", response_model=Shipment)
+def get_shipment(id: int | None = None):
     # Get the latest shipment if no id is provided
     if not id:
         id = max(shipments.keys())
@@ -75,50 +80,33 @@ def shipment(id: int | None = None) -> dict[str, Any]:
 
 # Define an endpoint for adding new shipments order:
 @app.post("/shipment")
-def addshipment(weight: float, data: dict[str, Any]) -> dict[str, Any]:
-    content = data["content"]
-    color = data["color"]
-    if weight > 25:
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="Max weight limit 25 is exceeded"
-        )
+def submit_shipment(shipment: ShipmentCreate) -> dict[str, Any]:
+    content = shipment.content
+    weight = shipment.weight
+    destination = shipment.destination
 
-    idx = max(shipments.keys()) + 1
-    shipments[idx] = {
+    new_id = max(shipments.keys()) + 1
+    shipments[new_id] = {
        "content": content,
         "weight": weight,
-        "color": color,
+        "destination": destination,
         "status": "placed", 
     }
+    return shipments[new_id]
 
-    return shipments[idx]
 
-
-@app.put("/shipment")
-def shipment_update(
-    id: int, 
-    content: str, 
-    weight: float, 
-    status: str
-    ) -> dict[str, Any]:
-    shipments[id] = {
-        "content": content,
-        "weight": weight,
-        "status": "status", 
-    }
-    return shipments[id]
-
-@app.patch("/shipment")
-def update_shipment(id: int, body: dict[str, Any]) -> dict[str, Any]:
+@app.patch("/shipment", response_model=Shipment)
+def update_shipments(id: int, body: ShipmentUpdate) -> dict[str, Any]:
     #Update the provided fields
     shipments[id].update(body)
     return shipments[id]
+
 
 @app.delete("/shipment")
 def delete_shipment(id: int) -> dict[str, str]:
      shipments.pop(id)
      return {"detail": f"Shipment with id #{id} is deleted!"}
+
 
 # Scalar API Documentation
 @app.get("/scalar", include_in_schema=False)
