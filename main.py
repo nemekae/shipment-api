@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, status
 from scalar_fastapi import get_scalar_api_reference
 
-from schemas import Shipment, ShipmentCreate, ShipmentStatus, ShipmentUpdate
+from schemas import BaseShipment, ShipmentCreate, ShipmentRead, ShipmentUpdate
 
 app = FastAPI()
 
@@ -64,7 +64,7 @@ shipments = {
 }
 
 # Define query parameter
-@app.get("/shipment", response_model=Shipment)
+@app.get("/shipment", response_model=BaseShipment)
 def get_shipment(id: int | None = None):
     # Get the latest shipment if no id is provided
     if not id:
@@ -74,29 +74,31 @@ def get_shipment(id: int | None = None):
     if id not in shipments:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Give id does not exist"
+            detail="Given id does not exist"
         )
     return shipments[id]
 
 # Define an endpoint for adding new shipments order:
 @app.post("/shipment")
 def submit_shipment(shipment: ShipmentCreate) -> dict[str, Any]:
-    content = shipment.content
-    weight = shipment.weight
-    destination = shipment.destination
+    #content = shipment.content
+    #weight = shipment.weight
+   # destination = shipment.destination
 
     new_id = max(shipments.keys()) + 1
     shipments[new_id] = {
-       "content": content,
-        "weight": weight,
-        "destination": destination,
-        "status": "placed", 
+        # we can use model_dump() to unpack each element more like spread rather than the individual approach
+      # "content": content,
+       # "weight": weight,
+        # "destination": destination,
+        **shipment.model_dump(),
+        "status": "placed"
     }
     return shipments[new_id]
 
 
-@app.patch("/shipment", response_model=Shipment)
-def update_shipments(id: int, body: ShipmentUpdate) -> dict[str, Any]:
+@app.patch("/shipment", response_model=ShipmentRead)
+def update_shipments(id: int, body: ShipmentUpdate):
     #Update the provided fields
     shipments[id].update(body)
     return shipments[id]
