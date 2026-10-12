@@ -1,0 +1,65 @@
+[
+  {
+    "id": 12700,
+    "content": "TV board",
+    "weight": 12.5,
+    "destination": "Michigan",
+    "status": "available"
+  },
+  {
+    "id": 12701,
+    "content": "staircase",
+    "weight": 12.7,
+    "destination": "Port-Harcourt",
+    "status": "delivered"
+  },
+  {
+    "id": 12702,
+    "content": "wooden table",
+    "weight": 12.4,
+    "destination": "London",
+    "status": "In-transit"
+  },
+  {
+    "id": 12703,
+    "content": "wooden chair",
+    "weight": 12,
+    "destination": "Manchester",
+    "status": "delivered"
+  },
+  {
+    "id": 12704,
+    "content": "bedframe",
+    "weight": 12.5,
+    "destination": "Duala",
+    "status": "In-transit"
+  },
+  {
+    "id": 12705,
+    "content": "wooden locker",
+    "weight": 12.5,
+    "destination": "Kimbuktoo",
+    "status": "placed"
+  },
+  {
+    "id": 12706,
+    "content": "cupboard",
+    "weight": 12.5,
+    "destination": "Birlin",
+    "status": "available"
+  },
+  {
+    "id": 12707,
+    "content": "gold tiles",
+    "weight": 10,
+    "destination": "Aba",
+    "status": "In-transit"
+  },
+  {
+    "content": "Fufu Table",
+    "weight": 23.0,
+    "destination": "Orista-J4",
+    "status": "placed",
+    "id": 12708
+  }
+]

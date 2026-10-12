@@ -1,114 +1,48 @@
 # pyright: reportMissingImports=false
 
-
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, status
 from scalar_fastapi import get_scalar_api_reference
 
-from schemas import BaseShipment, ShipmentCreate, ShipmentRead, ShipmentUpdate
+from database import Database
+from schemas import (
+    ShipmentCore,
+    ShipmentCreate,
+    ShipmentRead,
+    ShipmentUpdate,
+)
 
 app = FastAPI()
-
-# Let add a mini db of 7 different data elements
-
-shipments = {
-    12700: {
-        "content": "TV board",
-        "weight": 12.5,
-        "destination": 1001,
-        "status": "available",
-    },
-    12701: {
-            "content": "staircase",
-            "weight": 12.7,
-            "destination": 1002,
-            "status": "delivered",
-        },
-    12702: {
-            "content": "wooden table",
-            "weight": 12.4,
-            "destination": 1003,
-            "status": "In-transit",
-        },
-    12703: {
-            "content": "wooden chair",
-            "weight": 12,
-            "destination": 1004,
-            "status": "delivered",
-        },
-    12704: {
-            "content": "bedframe",
-            "weight": 12.5,
-            "destination": 1005,
-            "status": "In-transit",
-        },
-    12705: {
-            "content": "wooden locker",
-            "weight": 12.5,
-            "destination": 1006,
-            "status": "placed",
-        },
-    12706: {
-            "content": "cupboard",
-            "weight": 12.5,
-            "destination": 1007,
-            "status": "available",
-        },
-    12707: {
-            "content": "gold tiles",
-            "weight": 10,
-            "destination": 1008,
-            "status": "In-transit",
-        },
-}
+db = Database()
 
 # Define query parameter
-@app.get("/shipment", response_model=BaseShipment)
+@app.get("/shipment", response_model=ShipmentCore)
 def get_shipment(id: int | None = None):
-    # Get the latest shipment if no id is provided
-    if not id:
-        id = max(shipments.keys())
-        return shipments[id]
+    shipment = db.get(id)
+
     # Display an error if shipment id provided is not available
-    if id not in shipments:
+    if shipment is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Given id does not exist"
         )
-    return shipments[id]
+    return shipment
 
 # Define an endpoint for adding new shipments order:
 @app.post("/shipment")
 def submit_shipment(shipment: ShipmentCreate) -> dict[str, Any]:
-    #content = shipment.content
-    #weight = shipment.weight
-   # destination = shipment.destination
-
-    new_id = max(shipments.keys()) + 1
-    shipments[new_id] = {
-        # we can use model_dump() to unpack each element more like spread rather than the individual approach
-      # "content": content,
-       # "weight": weight,
-        # "destination": destination,
-        **shipment.model_dump(),
-        "status": "placed"
-    }
-    return shipments[new_id]
-
+    new_id = db.create(shipment)
+    return {"id": new_id}
 
 @app.patch("/shipment", response_model=ShipmentRead)
-def update_shipments(id: int, body: ShipmentUpdate):
-    #Update the provided fields
-    shipments[id].update(body)
-    return shipments[id]
-
+def update_shipments(id: int, shipment: ShipmentUpdate):
+    shipment = db.update(id, shipment)
+    return shipment
 
 @app.delete("/shipment")
 def delete_shipment(id: int) -> dict[str, str]:
-     shipments.pop(id)
-     return {"detail": f"Shipment with id #{id} is deleted!"}
-
+    db.delete(id)
 
 # Scalar API Documentation
 @app.get("/scalar", include_in_schema=False)

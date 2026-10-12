@@ -11,18 +11,18 @@ class ShipmentStatus(str, Enum):
     out_for_delivery = "Out-for-delivery"
     delivered = "delivered"
 
-class BaseShipment(BaseModel):
-    content: str
-    weight: float = Field(le=30, description="Weight of the shipment in kg")
-    destination: int 
+class ShipmentCore(BaseModel):
+    content: str = Field(max_length=100, description="Content of the shipment")
+    weight: float = Field(lt=25, ge= 30,description="Weight of the shipment in kg")
+    destination: str = Field(max_length=100, description="Destination of the shipment")
     status: ShipmentStatus
 
 
-class ShipmentRead(BaseShipment):
+class ShipmentRead(ShipmentCore):
     status: ShipmentStatus
 
 
-class ShipmentCreate(BaseShipment):
+class ShipmentCreate(ShipmentCore):
     pass
 
 
